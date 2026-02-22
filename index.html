@@ -1,171 +1,140 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reservasi Restaurant</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
-<style>
-*{box-sizing:border-box}
-body{
-margin:0;
-font-family:'Poppins',sans-serif;
-background:linear-gradient(135deg,#5a0f1c,#800020);
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-}
-.card{
-background:rgba(255,255,255,0.97);
-padding:40px;
-width:100%;
-max-width:500px;
-border-radius:15px;
-box-shadow:0 20px 50px rgba(0,0,0,0.3);
-}
-h2{
-text-align:center;
-margin-bottom:25px;
-color:#800020;
-}
-label{
-font-size:14px;
-font-weight:500;
-color:#444;
-}
-input,select,textarea{
-width:100%;
-padding:12px;
-margin-top:5px;
-margin-bottom:18px;
-border-radius:8px;
-border:1px solid #ccc;
-font-size:14px;
-}
-input:focus,select:focus,textarea:focus{
-border-color:#800020;
-outline:none;
-box-shadow:0 0 0 2px rgba(128,0,32,0.2);
-}
-button{
-width:100%;
-padding:14px;
-border:none;
-border-radius:8px;
-background:#800020;
-color:white;
-font-size:15px;
-font-weight:600;
-cursor:pointer;
-}
-button:hover{
-background:#a0002a;
-}
-.success{
-background:#e8f5e9;
-color:#2e7d32;
-padding:10px;
-border-radius:6px;
-margin-bottom:15px;
-display:none;
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-<h2>Form Reservasi</h2>
-
-<div class="success" id="successMsg">
-Reservasi berhasil dikirim!
-</div>
-
-<form id="formReservasi">
-
-<label>Nama Tamu</label>
-<input type="text" id="nama" required>
-
-<label>Nomor WhatsApp</label>
-<input type="tel" id="whatsapp" required>
-
-<label>Email</label>
-<input type="email" id="email">
-
-<label>Pilih Cabang</label>
-<select id="cabang" required></select>
-
-<label>Pilih Lantai</label>
-<select id="lantai" required></select>
-
-<label>Tanggal Reservasi</label>
-<input type="date" id="tanggal" required>
-
-<label>Jam Kedatangan</label>
-<input type="time" id="jam" required>
-
-<label>Jumlah Tamu</label>
-<input type="number" id="jumlah" min="1" required>
-
-<label>Catatan Tambahan</label>
-<textarea id="catatan" rows="3"></textarea>
-
-<button type="submit">Kirim Reservasi</button>
-
-</form>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const supabaseClient = supabase.createClient(
+/* =========================
+   🔐 KONEKSI SUPABASE
+========================= */
+
+const supabaseClient = window.supabase.createClient(
   "https://kpkwnhiuqkrmfnevbfku.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwa3duaGl1cWtybWZuZXZiZmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NTY2NTUsImV4cCI6MjA4NzMzMjY1NX0.JdYLPJHgmmwK74pMow4bThWucGvf4SAQfVUkbCs3cck"
 );
 
-// Generate UUID
+/* =========================
+   🎯 ELEMENT
+========================= */
+
+const form = document.getElementById("formReservasi");
+const cabangSelect = document.getElementById("cabang");
+const lantaiSelect = document.getElementById("lantai");
+const mejaSelect = document.createElement("select");
+mejaSelect.id = "meja";
+mejaSelect.required = true;
+
+/* Tambahkan dropdown meja setelah lantai */
+lantaiSelect.insertAdjacentHTML("afterend",
+  `<label>Pilih Meja</label>`);
+lantaiSelect.after(mejaSelect);
+
+/* =========================
+   🔄 GENERATE UUID
+========================= */
 function generateUUID(){
   return crypto.randomUUID();
 }
 
-// Load Cabang
+/* =========================
+   🏢 LOAD CABANG
+========================= */
 async function loadCabang(){
   const { data } = await supabaseClient
     .from("cabang")
-    .select("id,nama_cabang")
-    .eq("aktif", true);
+    .select("id,nama_cabang");
 
-  cabang.innerHTML = '<option value="">-- Pilih Cabang --</option>';
+  cabangSelect.innerHTML =
+    '<option value="">-- Pilih Cabang --</option>';
 
   data.forEach(c=>{
-    cabang.innerHTML += `<option value="${c.id}">${c.nama_cabang}</option>`;
+    cabangSelect.innerHTML +=
+      `<option value="${c.id}">
+        ${c.nama_cabang}
+      </option>`;
   });
 }
 
-// Load Lantai berdasarkan cabang
+/* =========================
+   🏬 LOAD LANTAI
+========================= */
 async function loadLantai(cabangId){
   const { data } = await supabaseClient
     .from("lantai")
     .select("id,nomor_lantai")
-    .eq("cabang_id", cabangId)
-    .eq("aktif", true);
+    .eq("cabang_id", cabangId);
 
-  lantai.innerHTML = '<option value="">-- Pilih Lantai --</option>';
+  lantaiSelect.innerHTML =
+    '<option value="">-- Pilih Lantai --</option>';
+
+  mejaSelect.innerHTML = "";
 
   data.forEach(l=>{
-    lantai.innerHTML += `<option value="${l.id}">Lantai ${l.nomor_lantai}</option>`;
+    lantaiSelect.innerHTML +=
+      `<option value="${l.id}">
+        Lantai ${l.nomor_lantai}
+      </option>`;
   });
 }
 
-cabang.addEventListener("change", ()=>{
-  loadLantai(cabang.value);
+/* =========================
+   🍽 LOAD MEJA
+   (Cek tanggal & jam)
+========================= */
+async function loadMeja(lantaiId){
+
+  const tanggal = document.getElementById("tanggal").value;
+  const jam = document.getElementById("jam").value;
+
+  if(!tanggal || !jam){
+    alert("Pilih tanggal & jam dulu");
+    return;
+  }
+
+  const { data: mejaList } = await supabaseClient
+    .from("meja")
+    .select("*")
+    .eq("id_lantai", lantaiId);
+
+  mejaSelect.innerHTML =
+    '<option value="">-- Pilih Meja --</option>';
+
+  for(const m of mejaList){
+
+    const { data: booked } = await supabaseClient
+      .from("reservasi")
+      .select("id")
+      .eq("id_meja", m.id)
+      .eq("tanggal_reservasi", tanggal)
+      .eq("jam_kedatangan", jam)
+      .eq("status_reservasi","confirm");
+
+    const disabled =
+      booked.length > 0 ? "disabled" : "";
+
+    mejaSelect.innerHTML += `
+      <option value="${m.id}" ${disabled}>
+        Meja ${m.nomor_meja}
+        (Kapasitas ${m.kapasitas})
+      </option>
+    `;
+  }
+}
+
+/* =========================
+   🎛 EVENT LISTENER
+========================= */
+
+cabangSelect.addEventListener("change", ()=>{
+  loadLantai(cabangSelect.value);
 });
 
-loadCabang();
+lantaiSelect.addEventListener("change", ()=>{
+  loadMeja(lantaiSelect.value);
+});
 
-document.getElementById("formReservasi")
-.addEventListener("submit", async (e)=>{
+/* =========================
+   📩 SUBMIT FORM
+========================= */
+
+form.addEventListener("submit", async (e)=>{
   e.preventDefault();
 
   const idReservasi = generateUUID();
@@ -181,32 +150,32 @@ document.getElementById("formReservasi")
     email: email.value,
     tanggal_reservasi: tanggal.value,
     hari: new Date(tanggal.value)
-           .toLocaleDateString("id-ID",{weekday:'long'}),
+           .toLocaleDateString("id-ID",
+           {weekday:'long'}),
     jam_kedatangan: jam.value,
     jumlah_tamu: parseInt(jumlah.value),
-    id_cabang: cabang.value,
-    id_lantai: lantai.value,
-    id_meja: null,
-    jenis_acara: "Reguler",
-    total_pembayaran: 0,
-    jumlah_deposit: 0,
-    metode_pembayaran_deposit: null,
-    permintaan_khusus: null,
+    id_cabang: cabangSelect.value,
+    id_lantai: lantaiSelect.value,
+    id_meja: mejaSelect.value,
     catatan_tambahan: catatan.value,
     status_reservasi: "menunggu_konfirmasi",
-    kode_qris: null,
     dibuat_pada: new Date().toISOString()
   }]);
 
   if(!error){
     successMsg.style.display="block";
-    formReservasi.reset();
+    form.reset();
+    mejaSelect.innerHTML="";
   }else{
     alert("Error: "+error.message);
   }
 
 });
-</script>
 
-</body>
-</html>
+/* =========================
+   🚀 INIT
+========================= */
+
+loadCabang();
+
+</script>
