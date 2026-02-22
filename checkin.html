@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Check-in Reservasi</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 40px;
+    }
+    .card {
+      max-width: 500px;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      margin: auto;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    h2 { margin-top: 0; }
+    button {
+      padding: 10px 20px;
+      background: green;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: darkgreen;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Informasi Reservasi</h2>
+  <div id="info">Memuat data...</div>
+  <br>
+  <button id="hadirBtn" style="display:none;">Tandai Hadir</button>
+</div>
+
+<script>
+  // 🔐 GANTI DENGAN PUNYA KAMU
+  const supabase = window.supabase.createClient(
+    "https://PROJECT_URL.supabase.co",
+    "ANON_PUBLIC_KEY"
+  );
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const kode = urlParams.get("kode");
+
+  const infoDiv = document.getElementById("info");
+  const hadirBtn = document.getElementById("hadirBtn");
+
+  async function loadData() {
+    if (!kode) {
+      infoDiv.innerHTML = "Kode tidak ditemukan.";
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("reservasi")
+      .select("*")
+      .eq("kode_reservasi", kode)
+      .single();
+
+    if (error || !data) {
+      infoDiv.innerHTML = "Reservasi tidak ditemukan.";
+      return;
+    }
+
+    infoDiv.innerHTML = `
+      <p><strong>Nama:</strong> ${data.nama_tamu}</p>
+      <p><strong>Tanggal:</strong> ${data.tanggal_reservasi}</p>
+      <p><strong>Jam:</strong> ${data.waktu_kedatangan}</p>
+      <p><strong>Cabang:</strong> ${data.cabang}</p>
+      <p><strong>Status:</strong> ${data.status}</p>
+    `;
+
+    if (data.status !== "Hadir") {
+      hadirBtn.style.display = "inline-block";
+    }
+  }
+
+  hadirBtn.addEventListener("click", async () => {
+    const { error } = await supabase
+      .from("reservasi")
+      .update({ status: "Hadir" })
+      .eq("kode_reservasi", kode);
+
+    if (!error) {
+      alert("Tamu berhasil ditandai hadir.");
+      location.reload();
+    } else {
+      alert("Gagal update status.");
+    }
+  });
+
+  loadData();
+</script>
+
+</body>
+</html>
