@@ -1,130 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel Reservasi</title>
-
-<style>
-body {
-  font-family: Arial;
-  background: #f4f6f9;
-  padding: 30px;
-}
-
-.container {
-  max-width: 900px;
-  margin: auto;
-}
-
-.card {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-}
-
-button {
-  padding: 8px 15px;
-  background: #1e88e5;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.login-box {
-  max-width: 400px;
-  margin: 100px auto;
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>Check-in Reservasi</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 40px;
+    }
+    .card {
+      max-width: 500px;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      margin: auto;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    h2 { margin-top: 0; }
+    button {
+      padding: 10px 20px;
+      background: green;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: darkgreen;
+    }
+  </style>
 </head>
 <body>
 
-<div id="loginSection" class="login-box">
-  <h2>Login Admin</h2>
-  <input type="email" id="email" placeholder="Email"><br><br>
-  <input type="password" id="password" placeholder="Password"><br><br>
-  <button onclick="login()">Login</button>
+<div class="card">
+  <h2>Informasi Reservasi</h2>
+  <div id="info">Memuat data...</div>
+  <br>
+  <button id="hadirBtn" style="display:none;">Tandai Hadir</button>
 </div>
-
-<div id="adminSection" class="container" style="display:none;">
-  <h2>Daftar Reservasi</h2>
-  <div id="listReservasi"></div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
-const supabase = supabase.createClient(
-  "https://kpkwnhiuqkrmfnevbfku.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwa3duaGl1cWtybWZuZXZiZmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NTY2NTUsImV4cCI6MjA4NzMzMjY1NX0.JdYLPJHgmmwK74pMow4bThWucGvf4SAQfVUkbCs3cck"
-)
+  // 🔐 GANTI DENGAN PUNYA KAMU
+  const supabase = window.supabase.createClient(
+    "https://kpkwnhiuqkrmfnevbfku.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwa3duaGl1cWtybWZuZXZiZmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NTY2NTUsImV4cCI6MjA4NzMzMjY1NX0.JdYLPJHgmmwK74pMow4bThWucGvf4SAQfVUkbCs3cck"
+  );
 
-// ================= LOGIN =================
-async function login() {
-  const { error } = await supabase.auth.signInWithPassword({
-    email: email.value,
-    password: password.value
-  })
+  const urlParams = new URLSearchParams(window.location.search);
+  const kode = urlParams.get("kode");
 
-  if (error) {
-    alert("Login gagal")
-  } else {
-    document.getElementById("loginSection").style.display = "none"
-    document.getElementById("adminSection").style.display = "block"
-    loadReservasi()
+  const infoDiv = document.getElementById("info");
+  const hadirBtn = document.getElementById("hadirBtn");
+
+  async function loadData() {
+    if (!kode) {
+      infoDiv.innerHTML = "Kode tidak ditemukan.";
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("reservasi")
+      .select("*")
+      .eq("kode_reservasi", kode)
+      .single();
+
+    if (error || !data) {
+      infoDiv.innerHTML = "Reservasi tidak ditemukan.";
+      return;
+    }
+
+    infoDiv.innerHTML = `
+      <p><strong>Nama:</strong> ${data.nama_tamu}</p>
+      <p><strong>Tanggal:</strong> ${data.tanggal_reservasi}</p>
+      <p><strong>Jam:</strong> ${data.waktu_kedatangan}</p>
+      <p><strong>Cabang:</strong> ${data.cabang}</p>
+      <p><strong>Status:</strong> ${data.status}</p>
+    `;
+
+    if (data.status !== "Hadir") {
+      hadirBtn.style.display = "inline-block";
+    }
   }
-}
 
-// ================= LOAD DATA =================
-async function loadReservasi() {
+  hadirBtn.addEventListener("click", async () => {
+    const { error } = await supabase
+      .from("reservasi")
+      .update({ status: "Hadir" })
+      .eq("kode_reservasi", kode);
 
-  const { data } = await supabase
-    .from("reservasi")
-    .select("*")
-    .order("dibuat_pada", { ascending: false })
+    if (!error) {
+      alert("Tamu berhasil ditandai hadir.");
+      location.reload();
+    } else {
+      alert("Gagal update status.");
+    }
+  });
 
-  const container = document.getElementById("listReservasi")
-  container.innerHTML = ""
-
-  data.forEach(item => {
-    container.innerHTML += `
-      <div class="card">
-        <b>${item.nama_tamu}</b><br>
-        Tanggal: ${item.tanggal_reservasi}<br>
-        Jam: ${item.jam_kedatangan}<br>
-        Status: ${item.status_reservasi}<br><br>
-
-        ${
-          item.status_reservasi === "menunggu_konfirmasi"
-          ? `<button onclick="konfirmasi('${item.id}')">Konfirmasi</button>`
-          : ""
-        }
-      </div>
-    `
-  })
-}
-
-// ================= KONFIRMASI =================
-async function konfirmasi(idReservasi) {
-
-  await fetch("https://kpkwnhiuqkrmfnevbfku.supabase.co/functions/v1/konfirmasi_reservasi", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer ANON_KEY_ANDA"
-    },
-    body: JSON.stringify({
-      id: idReservasi
-    })
-  })
-
-  alert("Reservasi dikonfirmasi")
-  loadReservasi()
-}
+  loadData();
 </script>
 
 </body>
