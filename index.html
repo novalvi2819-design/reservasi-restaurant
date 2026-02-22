@@ -1,50 +1,70 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Reservasi Restaurant</title>
+  <title>Form Reservasi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 350px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2b7cff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1f5fd6;
+    }
+  </style>
 </head>
 <body>
 
-<h2>Form Reservasi</h2>
+<div class="container">
+  <h2>Form Reservasi</h2>
 
-<form id="formReservasi">
-  <input type="text" id="nama" placeholder="Nama Tamu" required><br><br>
-  <input type="text" id="whatsapp" placeholder="Nomor WhatsApp" required><br><br>
-  <input type="date" id="tanggal" required><br><br>
-  <input type="time" id="jam" required><br><br>
-  <input type="number" id="jumlah" placeholder="Jumlah Tamu"><br><br>
-
-  <button type="submit">Kirim Reservasi</button>
-</form>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
-<script>
-const supabase = supabase.createClient(
-  "https://kpkwnhiuqkrmfnevbfku.supabase.co",
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwa3duaGl1cWtybWZuZXZiZmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NTY2NTUsImV4cCI6MjA4NzMzMjY1NX0.JdYLPJHgmmwK74pMow4bThWucGvf4SAQfVUkbCs3cck"
-)
-
-document.getElementById("formReservasi").addEventListener("submit", async function(e){
-  e.preventDefault()
-
-  const { data, error } = await supabase
-    .from("reservasi")
-    .insert([
-      {
-        nama_tamu: document.getElementById("nama").value,
-        nomor_whatsapp: document.getElementById("whatsapp").value,
-        tanggal_reservasi: document.getElementById("tanggal").value,
-        jam_kedatangan: document.getElementById("jam").value,
-        jumlah_tamu: document.getElementById("jumlah").value,
-        status_reservasi: "menunggu_konfirmasi"
-      }
-    ])
-
-  alert("Reservasi berhasil dikirim!")
-})
-</script>
+  <form>
+    <input type="text" placeholder="Nama Tamu" required>
+    <input type="text" placeholder="Nomor WhatsApp" required>
+    <input type="date" required>
+    <input type="time" required>
+    <input type="number" placeholder="Jumlah Tamu" required>
+    <button type="submit">Kirim Reservasi</button>
+  </form>
+</div>
 
 </body>
 </html>
-
