@@ -1,39 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reservasi Restaurant</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial;
-  background: #f5f7fa;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #5a0f1c, #800020);
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 .card {
-  background: white;
-  padding: 30px;
-  width: 400px;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(10px);
+  padding: 40px;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 15px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  animation: fadeIn 0.6s ease-in-out;
 }
 
-input, select {
+h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #800020;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #444;
+}
+
+input, select, textarea {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
+  padding: 12px;
+  margin-top: 5px;
+  margin-bottom: 18px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #800020;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(128,0,32,0.2);
 }
 
 button {
   width: 100%;
-  padding: 12px;
-  background: #1e88e5;
-  color: white;
+  padding: 14px;
   border: none;
+  border-radius: 8px;
+  background: #800020;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #a0002a;
+}
+
+.success {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  display: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 500px) {
+  .card {
+    padding: 25px;
+  }
 }
 </style>
 </head>
@@ -42,43 +104,88 @@ button {
 <div class="card">
 <h2>Form Reservasi</h2>
 
+<div class="success" id="successMsg">
+Reservasi berhasil dikirim!
+</div>
+
 <form id="formReservasi">
-<input type="text" id="nama" placeholder="Nama Tamu" required>
-<input type="text" id="whatsapp" placeholder="Nomor WhatsApp" required>
+
+<label>Nama Tamu</label>
+<input type="text" id="nama" required>
+
+<label>Nomor WhatsApp</label>
+<input type="tel" id="whatsapp" required>
+
+<label>Email (Opsional)</label>
+<input type="email" id="email">
+
+<label>Pilih Cabang</label>
+<select id="cabang" required>
+  <option value="">-- Pilih Cabang --</option>
+  <option value="Pondok Jati">Pondok Jati</option>
+  <option value="Deltasari">Deltasari</option>
+  <option value="Merr">Merr</option>
+  <option value="Dharmawangsa">Dharmawangsa</option>
+  <option value="Wisata Bukit Mas">Wisata Bukit Mas</option>
+</select>
+
+<label>Pilih Lantai</label>
+<select id="lantai" required>
+  <option value="">-- Pilih Lantai --</option>
+  <option value="1">Lantai 1</option>
+  <option value="2">Lantai 2</option>
+</select>
+
+<label>Tanggal Reservasi</label>
 <input type="date" id="tanggal" required>
+
+<label>Jam Kedatangan</label>
 <input type="time" id="jam" required>
-<input type="number" id="jumlah" placeholder="Jumlah Tamu" required>
+
+<label>Jumlah Tamu</label>
+<input type="number" id="jumlah" min="1" required>
+
+<label>Catatan Tambahan</label>
+<textarea id="catatan" rows="3"></textarea>
 
 <button type="submit">Kirim Reservasi</button>
+
 </form>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
-const supabase = supabase.createClient(
+const supabaseClient = supabase.createClient(
   "https://kpkwnhiuqkrmfnevbfku.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwa3duaGl1cWtybWZuZXZiZmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NTY2NTUsImV4cCI6MjA4NzMzMjY1NX0.JdYLPJHgmmwK74pMow4bThWucGvf4SAQfVUkbCs3cck"
-)
+);
 
 document.getElementById("formReservasi")
 .addEventListener("submit", async (e) => {
-  e.preventDefault()
+  e.preventDefault();
 
-  await supabase.from("reservasi").insert([{
+  const { error } = await supabaseClient.from("reservasi").insert([{
     nama_tamu: nama.value,
     nomor_whatsapp: whatsapp.value,
+    email: email.value,
+    cabang: cabang.value,
+    lantai: lantai.value,
     tanggal_reservasi: tanggal.value,
     jam_kedatangan: jam.value,
     jumlah_tamu: jumlah.value,
+    catatan: catatan.value,
     status_reservasi: "menunggu_konfirmasi"
-  }])
+  }]);
 
-  alert("Reservasi berhasil dikirim!")
-})
+  if (!error) {
+    document.getElementById("successMsg").style.display = "block";
+    document.getElementById("formReservasi").reset();
+  } else {
+    alert("Terjadi kesalahan: " + error.message);
+  }
+});
 </script>
 
 </body>
 </html>
-
-
