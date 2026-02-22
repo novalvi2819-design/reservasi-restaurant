@@ -1,189 +1,84 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Form Data Cabang</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-    }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reservasi Restaurant</title>
 
-    body {
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+<style>
+body {
+  font-family: Arial;
+  background: #f5f7fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
 
-    .container {
-      background: #ffffff;
-      padding: 40px;
-      width: 100%;
-      max-width: 500px;
-      border-radius: 12px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-      animation: fadeIn 0.5s ease-in-out;
-    }
+.card {
+  background: white;
+  padding: 30px;
+  width: 400px;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+}
 
-    h2 {
-      text-align: center;
-      margin-bottom: 25px;
-      color: #1e3c72;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    label {
-      font-size: 14px;
-      font-weight: 500;
-      display: block;
-      margin-bottom: 6px;
-      color: #333;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      transition: 0.3s;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: #2a5298;
-      outline: none;
-      box-shadow: 0 0 5px rgba(42,82,152,0.3);
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #1e3c72;
-      border: none;
-      color: #fff;
-      font-weight: 500;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-      font-size: 15px;
-    }
-
-    button:hover {
-      background: #16315f;
-    }
-
-    .success-message {
-      margin-top: 15px;
-      padding: 10px;
-      background: #d4edda;
-      color: #155724;
-      border-radius: 6px;
-      display: none;
-      text-align: center;
-      font-size: 14px;
-    }
-
-    @media(max-width: 480px){
-      .container {
-        padding: 25px;
-      }
-    }
-  </style>
+button {
+  width: 100%;
+  padding: 12px;
+  background: #1e88e5;
+  color: white;
+  border: none;
+}
+</style>
 </head>
 <body>
 
-  <div class="container">
-    <h2>Form Data Cabang</h2>
+<div class="card">
+<h2>Form Reservasi</h2>
 
-    <form id="cabangForm">
-      
-      <div class="form-group">
-        <label for="nama">Nama Cabang</label>
-        <input type="text" id="nama" required />
-      </div>
+<form id="formReservasi">
+<input type="text" id="nama" placeholder="Nama Tamu" required>
+<input type="text" id="whatsapp" placeholder="Nomor WhatsApp" required>
+<input type="date" id="tanggal" required>
+<input type="time" id="jam" required>
+<input type="number" id="jumlah" placeholder="Jumlah Tamu" required>
 
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" required />
-      </div>
+<button type="submit">Kirim Reservasi</button>
+</form>
+</div>
 
-      <div class="form-group">
-        <label for="telepon">No Telepon</label>
-        <input type="tel" id="telepon" required />
-      </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-      <div class="form-group">
-        <label for="alamat">Alamat</label>
-        <textarea id="alamat" rows="3" required></textarea>
-      </div>
+<script>
+const supabase = supabase.createClient(
+  "https://kpkwnhiuqkrmfnevbfku.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwa3duaGl1cWtybWZuZXZiZmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NTY2NTUsImV4cCI6MjA4NzMzMjY1NX0.JdYLPJHgmmwK74pMow4bThWucGvf4SAQfVUkbCs3cck"
+)
 
-      <div class="form-group">
-        <label for="status">Status</label>
-        <select id="status" required>
-          <option value="">-- Pilih Status --</option>
-          <option value="Aktif">Aktif</option>
-          <option value="Nonaktif">Nonaktif</option>
-        </select>
-      </div>
+document.getElementById("formReservasi")
+.addEventListener("submit", async (e) => {
+  e.preventDefault()
 
-      <button type="submit">Simpan Data</button>
+  await supabase.from("reservasi").insert([{
+    nama_tamu: nama.value,
+    nomor_whatsapp: whatsapp.value,
+    tanggal_reservasi: tanggal.value,
+    jam_kedatangan: jam.value,
+    jumlah_tamu: jumlah.value,
+    status_reservasi: "menunggu_konfirmasi"
+  }])
 
-      <div class="success-message" id="successMessage">
-        Data berhasil disimpan!
-      </div>
-
-    </form>
-  </div>
-
-  <script>
-    const form = document.getElementById('cabangForm');
-    const successMessage = document.getElementById('successMessage');
-
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      const nama = document.getElementById('nama').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const telepon = document.getElementById('telepon').value.trim();
-      const alamat = document.getElementById('alamat').value.trim();
-      const status = document.getElementById('status').value;
-
-      if (!nama || !email || !telepon || !alamat || !status) {
-        alert("Semua field wajib diisi!");
-        return;
-      }
-
-      // Simulasi kirim data
-      console.log({
-        nama,
-        email,
-        telepon,
-        alamat,
-        status
-      });
-
-      successMessage.style.display = "block";
-      form.reset();
-
-      setTimeout(() => {
-        successMessage.style.display = "none";
-      }, 3000);
-    });
-  </script>
+  alert("Reservasi berhasil dikirim!")
+})
+</script>
 
 </body>
 </html>
+
+
