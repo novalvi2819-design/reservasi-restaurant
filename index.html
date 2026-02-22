@@ -7,95 +7,69 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-* {
-  box-sizing: border-box;
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:'Poppins',sans-serif;
+background:linear-gradient(135deg,#5a0f1c,#800020);
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
 }
-
-body {
-  margin: 0;
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #5a0f1c, #800020);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+.card{
+background:rgba(255,255,255,0.97);
+padding:40px;
+width:100%;
+max-width:500px;
+border-radius:15px;
+box-shadow:0 20px 50px rgba(0,0,0,0.3);
 }
-
-.card {
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(10px);
-  padding: 40px;
-  width: 100%;
-  max-width: 480px;
-  border-radius: 15px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-  animation: fadeIn 0.6s ease-in-out;
+h2{
+text-align:center;
+margin-bottom:25px;
+color:#800020;
 }
-
-h2 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #800020;
+label{
+font-size:14px;
+font-weight:500;
+color:#444;
 }
-
-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #444;
+input,select,textarea{
+width:100%;
+padding:12px;
+margin-top:5px;
+margin-bottom:18px;
+border-radius:8px;
+border:1px solid #ccc;
+font-size:14px;
 }
-
-input, select, textarea {
-  width: 100%;
-  padding: 12px;
-  margin-top: 5px;
-  margin-bottom: 18px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  transition: 0.3s;
+input:focus,select:focus,textarea:focus{
+border-color:#800020;
+outline:none;
+box-shadow:0 0 0 2px rgba(128,0,32,0.2);
 }
-
-input:focus, select:focus, textarea:focus {
-  border-color: #800020;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(128,0,32,0.2);
+button{
+width:100%;
+padding:14px;
+border:none;
+border-radius:8px;
+background:#800020;
+color:white;
+font-size:15px;
+font-weight:600;
+cursor:pointer;
 }
-
-button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 8px;
-  background: #800020;
-  color: white;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.3s;
+button:hover{
+background:#a0002a;
 }
-
-button:hover {
-  background: #a0002a;
-}
-
-.success {
-  background: #e8f5e9;
-  color: #2e7d32;
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 15px;
-  display: none;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 500px) {
-  .card {
-    padding: 25px;
-  }
+.success{
+background:#e8f5e9;
+color:#2e7d32;
+padding:10px;
+border-radius:6px;
+margin-bottom:15px;
+display:none;
 }
 </style>
 </head>
@@ -116,25 +90,14 @@ Reservasi berhasil dikirim!
 <label>Nomor WhatsApp</label>
 <input type="tel" id="whatsapp" required>
 
-<label>Email (Opsional)</label>
+<label>Email</label>
 <input type="email" id="email">
 
 <label>Pilih Cabang</label>
-<select id="cabang" required>
-  <option value="">-- Pilih Cabang --</option>
-  <option value="Pondok Jati">Pondok Jati</option>
-  <option value="Deltasari">Deltasari</option>
-  <option value="Merr">Merr</option>
-  <option value="Dharmawangsa">Dharmawangsa</option>
-  <option value="Wisata Bukit Mas">Wisata Bukit Mas</option>
-</select>
+<select id="cabang" required></select>
 
 <label>Pilih Lantai</label>
-<select id="lantai" required>
-  <option value="">-- Pilih Lantai --</option>
-  <option value="1">Lantai 1</option>
-  <option value="2">Lantai 2</option>
-</select>
+<select id="lantai" required></select>
 
 <label>Tanggal Reservasi</label>
 <input type="date" id="tanggal" required>
@@ -161,29 +124,87 @@ const supabaseClient = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwa3duaGl1cWtybWZuZXZiZmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NTY2NTUsImV4cCI6MjA4NzMzMjY1NX0.JdYLPJHgmmwK74pMow4bThWucGvf4SAQfVUkbCs3cck"
 );
 
+// Generate UUID
+function generateUUID(){
+  return crypto.randomUUID();
+}
+
+// Load Cabang
+async function loadCabang(){
+  const { data } = await supabaseClient
+    .from("cabang")
+    .select("id,nama_cabang")
+    .eq("aktif", true);
+
+  cabang.innerHTML = '<option value="">-- Pilih Cabang --</option>';
+
+  data.forEach(c=>{
+    cabang.innerHTML += `<option value="${c.id}">${c.nama_cabang}</option>`;
+  });
+}
+
+// Load Lantai berdasarkan cabang
+async function loadLantai(cabangId){
+  const { data } = await supabaseClient
+    .from("lantai")
+    .select("id,nomor_lantai")
+    .eq("cabang_id", cabangId)
+    .eq("aktif", true);
+
+  lantai.innerHTML = '<option value="">-- Pilih Lantai --</option>';
+
+  data.forEach(l=>{
+    lantai.innerHTML += `<option value="${l.id}">Lantai ${l.nomor_lantai}</option>`;
+  });
+}
+
+cabang.addEventListener("change", ()=>{
+  loadLantai(cabang.value);
+});
+
+loadCabang();
+
 document.getElementById("formReservasi")
-.addEventListener("submit", async (e) => {
+.addEventListener("submit", async (e)=>{
   e.preventDefault();
 
-  const { error } = await supabaseClient.from("reservasi").insert([{
+  const idReservasi = generateUUID();
+  const kodeReservasi = "RSV-" + Date.now();
+
+  const { error } = await supabaseClient
+  .from("reservasi")
+  .insert([{
+    id: idReservasi,
+    kode_reservasi: kodeReservasi,
     nama_tamu: nama.value,
     nomor_whatsapp: whatsapp.value,
     email: email.value,
-    cabang: cabang.value,
-    lantai: lantai.value,
     tanggal_reservasi: tanggal.value,
+    hari: new Date(tanggal.value)
+           .toLocaleDateString("id-ID",{weekday:'long'}),
     jam_kedatangan: jam.value,
-    jumlah_tamu: jumlah.value,
-    catatan: catatan.value,
-    status_reservasi: "menunggu_konfirmasi"
+    jumlah_tamu: parseInt(jumlah.value),
+    id_cabang: cabang.value,
+    id_lantai: lantai.value,
+    id_meja: null,
+    jenis_acara: "Reguler",
+    total_pembayaran: 0,
+    jumlah_deposit: 0,
+    metode_pembayaran_deposit: null,
+    permintaan_khusus: null,
+    catatan_tambahan: catatan.value,
+    status_reservasi: "menunggu_konfirmasi",
+    kode_qris: null,
+    dibuat_pada: new Date().toISOString()
   }]);
 
-  if (!error) {
-    document.getElementById("successMsg").style.display = "block";
-    document.getElementById("formReservasi").reset();
-  } else {
-    alert("Terjadi kesalahan: " + error.message);
+  if(!error){
+    successMsg.style.display="block";
+    formReservasi.reset();
+  }else{
+    alert("Error: "+error.message);
   }
+
 });
 </script>
 
